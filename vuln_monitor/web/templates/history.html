@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}历史漏洞收集{% endblock %}
+{% block page_title %}历史漏洞收集{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <p class="text-sm text-surface-500">回填历史漏洞数据，从各数据源获取指定时间范围内的漏洞信息</p>
+
+    <div class="bg-white rounded-xl shadow-sm border border-surface-200 p-6">
+        <h2 class="text-base font-semibold text-surface-900 mb-4">新建收集任务</h2>
+        <form id="history-form" class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-surface-700 mb-1">开始日期</label>
+                    <input type="date" id="start-date" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-surface-700 mb-1">结束日期</label>
+                    <input type="date" id="end-date" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-surface-700 mb-1">快捷选择</label>
+                    <select id="quick-range" onchange="applyQuickRange()" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                        <option value="">自定义</option>
+                        <option value="7">最近7天</option>
+                        <option value="30">最近30天</option>
+                        <option value="90">最近90天</option>
+                        <option value="180">最近半年</option>
+                        <option value="365">最近1年</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-surface-700 mb-2">选择数据源</label>
+                <div class="flex items-center space-x-3 mb-3">
+                    <button type="button" onclick="toggleAllSources(true)" class="text-xs text-brand-600 hover:text-brand-700 font-medium">全选</button>
+                    <span class="text-surface-300">|</span>
+                    <button type="button" onclick="toggleAllSources(false)" class="text-xs text-surface-500 hover:text-surface-700 font-medium">取消全选</button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                    {% for source in sources %}
+                    <label class="flex items-center space-x-2 px-3 py-2 bg-surface-50 rounded-lg hover:bg-surface-100 cursor-pointer transition-colors {% if not source.enabled %}opacity-50{% endif %}">
+                        <input type="checkbox" name="source" value="{{ source.name }}" {% if source.enabled %}checked{% else %}disabled{% endif %} class="h-4 w-4 text-brand-600 border-surface-300 rounded focus:ring-brand-500" />
+                        <span class="text-xs font-medium text-surface-700">{{ source.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="skip-push" checked class="h-4 w-4 text-brand-600 border-surface-300 rounded focus:ring-brand-500" />
+                    <label for="skip-push" class="text-sm text-surface-700">跳过推送通知（推荐）</label>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="include-non-rce" class="h-4 w-4 text-brand-600 border-surface-300 rounded focus:ring-brand-500" />
+                    <label for="include-non-rce" class="text-sm text-surface-700">包含非RCE漏洞</label>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button type="button" onclick="startHistoryCollection()" class="inline-flex items-center px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    开始收集
+                </button>
+                <span id="collection-status" class="text-sm text-surface-500"></span>
+            </div>
+        </form>
+    </div>
+
+    <div id="collection-progress" class="hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-surface-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold text-surface-900">收集进度</h2>
+                <span id="progress-percent" class="text-sm font-medium text-brand-600">0%</span>
+            </div>
+            <div class="w-full bg-surface-200 rounded-full h-2.5 mb-4">
+                <div id="progress-bar" class="bg-brand-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div id="progress-log" class="space-y-2 max-h-64 overflow-y-auto text-sm">
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-surface-200">
+        <div class="px-6 py-4 border-b border-surface-200">
+            <h2 class="text-base font-semibold text-surface-900">历史收集记录</h2>
+        </div>
+        <div id="history-records" class="p-6">
+            {% if history_records %}
+            <div class="space-y-3">
+                {% for record in history_records %}
+                <div class="flex items-center justify-between p-4 bg-surface-50 rounded-lg">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0 p-2 rounded-lg {% if record.status == 'completed' %}bg-green-100{% elif record.status == 'running' %}bg-brand-100{% elif record.status == 'failed' %}bg-red-100{% else %}bg-surface-100{% endif %}">
+                            {% if record.status == 'completed' %}
+                            <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                            {% elif record.status == 'running' %}
+                            <svg class="w-4 h-4 text-brand-600 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            {% elif record.status == 'failed' %}
+                            <svg class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            {% else %}
+                            <svg class="w-4 h-4 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-surface-900">{{ record.sources }}</p>
+                            <p class="text-xs text-surface-500">{{ record.date_range }} | {{ record.created_at }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-surface-900">{{ record.collected }} 条</p>
+                            <p class="text-xs text-surface-500">新增 {{ record.new_count }} 条</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <svg class="mx-auto h-10 w-10 text-surface-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <p class="mt-2 text-sm text-surface-400">暂无历史收集记录</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function applyQuickRange() {
+    const days = document.getElementById('quick-range').value;
+    if (!days) return;
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - parseInt(days));
+    document.getElementById('start-date').value = start.toISOString().split('T')[0];
+    document.getElementById('end-date').value = end.toISOString().split('T')[0];
+}
+
+function toggleAllSources(checked) {
+    document.querySelectorAll('input[name="source"]:not(:disabled)').forEach(cb => cb.checked = checked);
+}
+
+function startHistoryCollection() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    const selectedSources = Array.from(document.querySelectorAll('input[name="source"]:checked')).map(cb => cb.value);
+    const skipPush = document.getElementById('skip-push').checked;
+    const includeNonRce = document.getElementById('include-non-rce').checked;
+
+    if (!startDate || !endDate) {
+        alert('请选择日期范围');
+        return;
+    }
+    if (selectedSources.length === 0) {
+        alert('请至少选择一个数据源');
+        return;
+    }
+
+    const statusEl = document.getElementById('collection-status');
+    const progressDiv = document.getElementById('collection-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
+    const progressLog = document.getElementById('progress-log');
+
+    statusEl.textContent = '提交中...';
+    progressDiv.classList.remove('hidden');
+    progressLog.innerHTML = '';
+    progressBar.style.width = '0%';
+    progressPercent.textContent = '0%';
+
+    fetch('/api/v1/history/collect', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            start_date: startDate,
+            end_date: endDate,
+            sources: selectedSources,
+            skip_push: skipPush,
+            include_non_rce: includeNonRce,
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.task_id) {
+            statusEl.textContent = '任务已创建';
+            addProgressLog('info', '任务已创建，开始收集...');
+            pollProgress(data.task_id);
+        } else {
+            statusEl.textContent = data.message || '创建失败';
+            addProgressLog('error', data.message || '任务创建失败');
+        }
+    })
+    .catch(err => {
+        statusEl.textContent = '提交失败';
+        addProgressLog('error', '请求失败: ' + err.message);
+    });
+}
+
+function pollProgress(taskId) {
+    const interval = setInterval(() => {
+        fetch('/api/v1/history/progress/' + taskId)
+            .then(r => r.json())
+            .then(data => {
+                const progressBar = document.getElementById('progress-bar');
+                const progressPercent = document.getElementById('progress-percent');
+                const statusEl = document.getElementById('collection-status');
+
+                const pct = data.progress || 0;
+                progressBar.style.width = pct + '%';
+                progressPercent.textContent = pct + '%';
+
+                if (data.logs && data.logs.length > 0) {
+                    const progressLog = document.getElementById('progress-log');
+                    const existingCount = progressLog.children.length;
+                    for (let i = existingCount; i < data.logs.length; i++) {
+                        addProgressLog(data.logs[i].type || 'info', data.logs[i].message);
+                    }
+                }
+
+                if (data.status === 'completed') {
+                    clearInterval(interval);
+                    statusEl.textContent = '收集完成！新增 ' + (data.new_count || 0) + ' 条漏洞';
+                    addProgressLog('success', '收集完成！共收集 ' + (data.collected || 0) + ' 条，新增 ' + (data.new_count || 0) + ' 条');
+                } else if (data.status === 'failed') {
+                    clearInterval(interval);
+                    statusEl.textContent = '收集失败';
+                    addProgressLog('error', data.error || '收集失败');
+                }
+            })
+            .catch(err => {
+                clearInterval(interval);
+            });
+    }, 2000);
+}
+
+function addProgressLog(type, message) {
+    const progressLog = document.getElementById('progress-log');
+    const colors = {
+        'info': 'text-blue-600',
+        'success': 'text-green-600',
+        'error': 'text-red-600',
+        'warning': 'text-yellow-600',
+    };
+    const icons = {
+        'info': '●',
+        'success': '✓',
+        'error': '✗',
+        'warning': '⚠',
+    };
+    const now = new Date().toLocaleTimeString();
+    const div = document.createElement('div');
+    div.className = 'flex items-start space-x-2 ' + (colors[type] || 'text-surface-600');
+    div.innerHTML = '<span class="flex-shrink-0">' + (icons[type] || '●') + '</span><span class="text-surface-400 text-xs flex-shrink-0">[' + now + ']</span><span>' + message + '</span>';
+    progressLog.appendChild(div);
+    progressLog.scrollTop = progressLog.scrollHeight;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 30);
+    document.getElementById('start-date').value = start.toISOString().split('T')[0];
+    document.getElementById('end-date').value = end.toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

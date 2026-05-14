@@ -1,3 +1,7 @@
+import uuid
+from datetime import datetime, timedelta
+from threading import Lock
+
 from loguru import logger
 
 from vuln_monitor.storage.database import DatabaseManager
@@ -46,6 +50,10 @@ COLLECTOR_CLASSES = [
     ThreatBookCollector,
     OSCSCollector,
 ]
+
+
+_history_tasks: dict = {}
+_history_lock = Lock()
 
 
 class CollectorManager:
@@ -181,3 +189,120 @@ class CollectorManager:
         except Exception as e:
             logger.error(f"[{source_name}] Collection failed: {e}")
             return 0
+
+    def run_history(
+        self,
+        start_date: str,
+        end_date: str,
+        source_names: list[str] = None,
+        skip_push: bool = True,
+        include_non_rce: bool = False,
+        task_id: str = None,
+    ) -> dict:
+        if source_names is None:
+            source_names = list(self.collectors.keys())
+
+        task_id = task_id or str(uuid.uuid4())[:8]
+        total_sources = len(source_names)
+        all_raw = []
+        total_new = 0
+        logs = []
+
+        def add_log(msg_type, msg):
+            logs.append({"type": msg_type, "message": msg})
+            with _history_lock:
+                if task_id in _history_tasks:
+                    _history_tasks[task_id]["logs"] = logs[-100:]
+
+        add_log("info", f"开始历史漏洞收集: {start_date} ~ {end_date}, 共 {total_sources} 个数据源")
+
+        with _history_lock:
+            _history_tasks[task_id] = {
+                "task_id": task_id,
+                "status": "running",
+                "progress": 0,
+                "start_date": start_date,
+                "end_date": end_date,
+                "sources": ", ".join(source_names),
+                "collected": 0,
+                "new_count": 0,
+                "logs": logs,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            }
+
+        for i, name in enumerate(source_names):
+            collector = self.collectors.get(name)
+            if not collector:
+                add_log("warning", f"未知数据源: {name}, 跳过")
+                continue
+
+            try:
+                add_log("info", f"[{i+1}/{total_sources}] 正在采集 {name}...")
+                with _history_lock:
+                    _history_tasks[task_id]["progress"] = int((i / total_sources) * 80)
+
+                raw_vulns = collector.collect()
+
+                filtered_by_date = []
+                for v in raw_vulns:
+                    pub_date = v.get("publish_date", "")
+                    if pub_date:
+                        try:
+                            pub_date_short = pub_date[:10]
+                            if start_date <= pub_date_short <= end_date:
+                                filtered_by_date.append(v)
+                        except (ValueError, TypeError):
+                            filtered_by_date.append(v)
+                    else:
+                        filtered_by_date.append(v)
+
+                all_raw.extend(filtered_by_date)
+                add_log("info", f"[{name}] 采集到 {len(raw_vulns)} 条, 日期范围内 {len(filtered_by_date)} 条")
+                self.db.update_source_last_crawl(name)
+            except Exception as e:
+                add_log("error", f"[{name}] 采集失败: {e}")
+
+        with _history_lock:
+            _history_tasks[task_id]["progress"] = 85
+        add_log("info", f"原始数据共 {len(all_raw)} 条, 开始去重/过滤/评分...")
+
+        unique = self.deduplicator.deduplicate(all_raw)
+        filtered = self.filter_engine.filter(unique, rce_only=not include_non_rce)
+        scored = self.scorer.score_vulnerabilities(filtered)
+
+        with _history_lock:
+            _history_tasks[task_id]["progress"] = 95
+        add_log("info", f"处理后 {len(scored)} 条漏洞, 开始存储...")
+
+        stored = self._store_vulnerabilities(scored)
+        total_new = stored
+
+        if not skip_push and scored:
+            self._push_vulnerabilities(scored)
+
+        for collector in self.collectors.values():
+            try:
+                collector.close()
+            except Exception:
+                pass
+
+        with _history_lock:
+            _history_tasks[task_id]["status"] = "completed"
+            _history_tasks[task_id]["progress"] = 100
+            _history_tasks[task_id]["collected"] = len(all_raw)
+            _history_tasks[task_id]["new_count"] = total_new
+
+        add_log("success", f"历史收集完成! 共收集 {len(all_raw)} 条, 新增 {total_new} 条")
+        logger.info(f"History collection completed: {len(all_raw)} collected, {total_new} new")
+
+        return _history_tasks[task_id]
+
+
+def get_history_task(task_id: str) -> dict:
+    with _history_lock:
+        return _history_tasks.get(task_id, {"task_id": task_id, "status": "unknown", "progress": 0})
+
+
+def get_all_history_tasks() -> list[dict]:
+    with _history_lock:
+        return list(_history_tasks.values())

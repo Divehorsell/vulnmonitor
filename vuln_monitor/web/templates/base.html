@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}漏洞监控仪表盘{% endblock %} - VulnMonitor</title>
+    <title>{% block title %}仪表盘{% endblock %} - VulnMonitor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -30,6 +30,13 @@
                             700: '#44403c',
                             800: '#292524',
                             900: '#1c1917',
+                        },
+                        sidebar: {
+                            bg: '#1c1917',
+                            hover: '#292524',
+                            active: '#44403c',
+                            text: '#a8a29e',
+                            'text-active': '#ff7c11',
                         }
                     }
                 }
@@ -42,43 +49,147 @@
         .htmx-indicator { display: none; }
         .htmx-request .htmx-indicator { display: inline-block; }
         .htmx-request.htmx-indicator { display: inline-block; }
+        .nav-item { transition: all 0.15s ease; }
+        .nav-item:hover { background-color: #292524; }
+        .nav-item.active { background-color: #44403c; color: #ff7c11; }
+        .nav-item.active .nav-icon { color: #ff7c11; }
+        .sidebar-collapsed .sidebar-text { display: none; }
+        .sidebar-collapsed .sidebar { width: 4rem; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="h-full bg-surface-50 text-surface-900 antialiased">
-    <nav class="bg-surface-900 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
+    <div class="flex h-full">
+        <aside class="sidebar w-60 bg-sidebar-bg flex flex-col flex-shrink-0 h-full fixed z-30">
+            <div class="flex items-center h-16 px-4 border-b border-surface-800">
                 <div class="flex items-center space-x-3">
                     <div class="flex-shrink-0">
-                        <svg class="h-8 w-8 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="h-8 w-8 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
                     </div>
-                    <a href="/" class="text-white font-bold text-xl tracking-tight">VulnMonitor</a>
-                    <span class="text-brand-400 text-sm font-medium hidden sm:inline">漏洞情报监控</span>
-                </div>
-                <div class="flex items-center space-x-1">
-                    <a href="/" class="text-surface-300 hover:text-white hover:bg-surface-700 px-3 py-2 rounded-md text-sm font-medium transition-colors {% if request.url.path == '/' %}bg-surface-700 text-white{% endif %}">
-                        仪表盘
-                    </a>
-                    <a href="/vulnerabilities" class="text-surface-300 hover:text-white hover:bg-surface-700 px-3 py-2 rounded-md text-sm font-medium transition-colors {% if 'vulnerabilities' in request.url.path %}bg-surface-700 text-white{% endif %}">
-                        漏洞列表
-                    </a>
+                    <div class="sidebar-text">
+                        <span class="text-white font-bold text-lg tracking-tight">VulnMonitor</span>
+                        <p class="text-surface-500 text-xs">漏洞情报监控</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {% block content %}{% endblock %}
-    </main>
+            <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+                <div class="px-3 py-2">
+                    <p class="text-xs font-semibold text-surface-600 uppercase tracking-wider sidebar-text">监控</p>
+                </div>
 
-    <footer class="bg-surface-900 border-t border-surface-700 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <p class="text-center text-surface-300 text-sm">VulnMonitor 漏洞情报监控系统 &copy; 2024</p>
+                <a href="/" class="nav-item flex items-center px-3 py-2.5 rounded-lg text-sidebar-text hover:text-white {% if request.url.path == '/' %}active{% endif %}">
+                    <svg class="nav-icon w-5 h-5 flex-shrink-0 {% if request.url.path == '/' %}text-brand-500{% else %}text-surface-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    <span class="ml-3 text-sm font-medium sidebar-text">仪表盘</span>
+                </a>
+
+                <a href="/vulnerabilities" class="nav-item flex items-center px-3 py-2.5 rounded-lg text-sidebar-text hover:text-white {% if 'vulnerabilities' in request.url.path %}active{% endif %}">
+                    <svg class="nav-icon w-5 h-5 flex-shrink-0 {% if 'vulnerabilities' in request.url.path %}text-brand-500{% else %}text-surface-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span class="ml-3 text-sm font-medium sidebar-text">漏洞列表</span>
+                </a>
+
+                <div class="px-3 py-2 mt-4">
+                    <p class="text-xs font-semibold text-surface-600 uppercase tracking-wider sidebar-text">采集</p>
+                </div>
+
+                <a href="/sources" class="nav-item flex items-center px-3 py-2.5 rounded-lg text-sidebar-text hover:text-white {% if request.url.path == '/sources' %}active{% endif %}">
+                    <svg class="nav-icon w-5 h-5 flex-shrink-0 {% if request.url.path == '/sources' %}text-brand-500{% else %}text-surface-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span class="ml-3 text-sm font-medium sidebar-text">数据源</span>
+                </a>
+
+                <a href="/tasks" class="nav-item flex items-center px-3 py-2.5 rounded-lg text-sidebar-text hover:text-white {% if request.url.path == '/tasks' %}active{% endif %}">
+                    <svg class="nav-icon w-5 h-5 flex-shrink-0 {% if request.url.path == '/tasks' %}text-brand-500{% else %}text-surface-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span class="ml-3 text-sm font-medium sidebar-text">采集任务</span>
+                </a>
+
+                <a href="/history" class="nav-item flex items-center px-3 py-2.5 rounded-lg text-sidebar-text hover:text-white {% if request.url.path == '/history' %}active{% endif %}">
+                    <svg class="nav-icon w-5 h-5 flex-shrink-0 {% if request.url.path == '/history' %}text-brand-500{% else %}text-surface-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="ml-3 text-sm font-medium sidebar-text">历史收集</span>
+                </a>
+
+                <div class="px-3 py-2 mt-4">
+                    <p class="text-xs font-semibold text-surface-600 uppercase tracking-wider sidebar-text">工具</p>
+                </div>
+
+                <a href="/poc-search" class="nav-item flex items-center px-3 py-2.5 rounded-lg text-sidebar-text hover:text-white {% if request.url.path == '/poc-search' %}active{% endif %}">
+                    <svg class="nav-icon w-5 h-5 flex-shrink-0 {% if request.url.path == '/poc-search' %}text-brand-500{% else %}text-surface-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span class="ml-3 text-sm font-medium sidebar-text">PoC搜索</span>
+                </a>
+
+                <a href="/reports" class="nav-item flex items-center px-3 py-2.5 rounded-lg text-sidebar-text hover:text-white {% if request.url.path == '/reports' %}active{% endif %}">
+                    <svg class="nav-icon w-5 h-5 flex-shrink-0 {% if request.url.path == '/reports' %}text-brand-500{% else %}text-surface-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="ml-3 text-sm font-medium sidebar-text">报告</span>
+                </a>
+
+                <a href="/cli" class="nav-item flex items-center px-3 py-2.5 rounded-lg text-sidebar-text hover:text-white {% if request.url.path == '/cli' %}active{% endif %}">
+                    <svg class="nav-icon w-5 h-5 flex-shrink-0 {% if request.url.path == '/cli' %}text-brand-500{% else %}text-surface-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span class="ml-3 text-sm font-medium sidebar-text">CLI工具</span>
+                </a>
+
+                <div class="px-3 py-2 mt-4">
+                    <p class="text-xs font-semibold text-surface-600 uppercase tracking-wider sidebar-text">系统</p>
+                </div>
+
+                <a href="/settings" class="nav-item flex items-center px-3 py-2.5 rounded-lg text-sidebar-text hover:text-white {% if request.url.path == '/settings' %}active{% endif %}">
+                    <svg class="nav-icon w-5 h-5 flex-shrink-0 {% if request.url.path == '/settings' %}text-brand-500{% else %}text-surface-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="ml-3 text-sm font-medium sidebar-text">设置</span>
+                </a>
+            </nav>
+
+            <div class="px-3 py-4 border-t border-surface-800">
+                <div class="flex items-center px-3 sidebar-text">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center">
+                            <span class="text-white text-xs font-bold">VM</span>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-white">VulnMonitor</p>
+                        <p class="text-xs text-surface-500">v0.1.0</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="flex-1 ml-60 flex flex-col h-full overflow-hidden">
+            <header class="bg-white border-b border-surface-200 h-16 flex items-center px-6 flex-shrink-0">
+                <div class="flex items-center justify-between w-full">
+                    <div>
+                        <h1 class="text-lg font-semibold text-surface-900">{% block page_title %}仪表盘{% endblock %}</h1>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6">
+                {% block content %}{% endblock %}
+            </main>
         </div>
-    </footer>
+    </div>
 
     {% block extra_scripts %}{% endblock %}
 </body>

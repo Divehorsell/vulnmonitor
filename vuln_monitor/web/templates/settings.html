@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}设置{% endblock %}
+{% block page_title %}设置{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <p class="text-sm text-surface-500">配置系统参数和推送渠道</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-surface-200">
+            <div class="px-6 py-4 border-b border-surface-200">
+                <h2 class="text-base font-semibold text-surface-900">推送渠道配置</h2>
+            </div>
+            <div class="p-6 space-y-6">
+                <div>
+                    <h3 class="text-sm font-medium text-surface-900 mb-3 flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                        Telegram
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-surface-500 mb-1">Bot Token</label>
+                            <input type="password" id="tg-bot-token" placeholder="输入 Telegram Bot Token" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-surface-500 mb-1">Chat ID</label>
+                            <input type="text" id="tg-chat-id" placeholder="输入 Chat ID" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-surface-200" />
+
+                <div>
+                    <h3 class="text-sm font-medium text-surface-900 mb-3 flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                        钉钉
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-surface-500 mb-1">Webhook URL</label>
+                            <input type="text" id="dingtalk-webhook" placeholder="输入钉钉机器人 Webhook URL" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-surface-500 mb-1">签名密钥（可选）</label>
+                            <input type="password" id="dingtalk-secret" placeholder="输入签名密钥" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-surface-200" />
+
+                <div>
+                    <h3 class="text-sm font-medium text-surface-900 mb-3 flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        企业微信
+                    </h3>
+                    <div>
+                        <label class="block text-xs font-medium text-surface-500 mb-1">Webhook URL</label>
+                        <input type="text" id="wecom-webhook" placeholder="输入企业微信机器人 Webhook URL" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                </div>
+
+                <hr class="border-surface-200" />
+
+                <div>
+                    <h3 class="text-sm font-medium text-surface-900 mb-3 flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+                        飞书
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-surface-500 mb-1">Webhook URL</label>
+                            <input type="text" id="feishu-webhook" placeholder="输入飞书机器人 Webhook URL" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-surface-500 mb-1">签名密钥（可选）</label>
+                            <input type="password" id="feishu-secret" placeholder="输入签名密钥" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-surface-200" />
+
+                <div>
+                    <h3 class="text-sm font-medium text-surface-900 mb-3 flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        邮件
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-surface-500 mb-1">SMTP服务器</label>
+                                <input type="text" id="email-smtp-host" placeholder="smtp.example.com" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-surface-500 mb-1">端口</label>
+                                <input type="number" id="email-smtp-port" value="465" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-surface-500 mb-1">SMTP账号</label>
+                            <input type="text" id="email-smtp-user" placeholder="user@example.com" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-surface-500 mb-1">SMTP密码</label>
+                            <input type="password" id="email-smtp-password" placeholder="输入SMTP密码" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-surface-500 mb-1">收件人（逗号分隔）</label>
+                            <input type="text" id="email-to" placeholder="a@example.com, b@example.com" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-surface-200">
+                <div class="px-6 py-4 border-b border-surface-200">
+                    <h2 class="text-base font-semibold text-surface-900">系统配置</h2>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-surface-500 mb-1">采集间隔（分钟）</label>
+                        <input type="number" id="crawl-interval" value="{{ config.crawl_interval }}" min="5" max="1440" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-surface-500 mb-1">采集超时（秒）</label>
+                        <input type="number" id="crawl-timeout" value="{{ config.crawl_timeout }}" min="5" max="300" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-surface-500 mb-1">推送评分阈值</label>
+                        <input type="number" id="push-score-threshold" value="{{ config.push_score_threshold }}" min="0" max="100" step="5" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-surface-500 mb-1">去重TTL（天）</label>
+                        <input type="number" id="dedup-ttl-days" value="{{ config.dedup_ttl_days }}" min="1" max="365" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-surface-500 mb-1">GitHub Token（PoC搜索）</label>
+                        <input type="password" id="github-token" placeholder="ghp_xxxx" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" id="push-enabled" {% if config.push_enabled %}checked{% endif %} class="h-4 w-4 text-brand-600 border-surface-300 rounded focus:ring-brand-500" />
+                        <label for="push-enabled" class="text-sm text-surface-700">启用推送通知</label>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" id="debug-mode" {% if config.debug %}checked{% endif %} class="h-4 w-4 text-brand-600 border-surface-300 rounded focus:ring-brand-500" />
+                        <label for="debug-mode" class="text-sm text-surface-700">调试模式</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-surface-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold text-surface-900">数据维护</h2>
+                </div>
+                <div class="space-y-3">
+                    <button onclick="cleanupData()" class="w-full px-4 py-2 bg-surface-100 hover:bg-surface-200 text-surface-700 text-sm font-medium rounded-lg transition-colors">
+                        清理过期记录（TTL: {{ config.dedup_ttl_days }}天）
+                    </button>
+                    <button onclick="if(confirm('确定要重建数据库吗？这将清除所有数据。')){rebuildDb()}" class="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-medium rounded-lg transition-colors">
+                        重建数据库
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3">
+                <button onclick="saveSettings()" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+                    保存配置
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="settings-status" class="fixed bottom-4 right-4 hidden"></div>
+
+<script>
+function saveSettings() {
+    const statusDiv = document.getElementById('settings-status');
+    const configs = {
+        'TG_BOT_TOKEN': document.getElementById('tg-bot-token').value,
+        'TG_CHAT_ID': document.getElementById('tg-chat-id').value,
+        'DINGTALK_WEBHOOK': document.getElementById('dingtalk-webhook').value,
+        'DINGTALK_SECRET': document.getElementById('dingtalk-secret').value,
+        'WECOM_WEBHOOK': document.getElementById('wecom-webhook').value,
+        'FEISHU_WEBHOOK': document.getElementById('feishu-webhook').value,
+        'FEISHU_SECRET': document.getElementById('feishu-secret').value,
+        'EMAIL_SMTP_HOST': document.getElementById('email-smtp-host').value,
+        'EMAIL_SMTP_PORT': document.getElementById('email-smtp-port').value,
+        'EMAIL_SMTP_USER': document.getElementById('email-smtp-user').value,
+        'EMAIL_SMTP_PASSWORD': document.getElementById('email-smtp-password').value,
+        'EMAIL_TO': document.getElementById('email-to').value,
+        'GITHUB_TOKEN': document.getElementById('github-token').value,
+        'CRAWL_INTERVAL': document.getElementById('crawl-interval').value,
+        'CRAWL_TIMEOUT': document.getElementById('crawl-timeout').value,
+        'PUSH_SCORE_THRESHOLD': document.getElementById('push-score-threshold').value,
+        'DEDUP_TTL_DAYS': document.getElementById('dedup-ttl-days').value,
+        'PUSH_ENABLED': document.getElementById('push-enabled').checked ? 'true' : 'false',
+        'DEBUG': document.getElementById('debug-mode').checked ? 'true' : 'false',
+    };
+
+    fetch('/api/v1/settings', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(configs)
+    })
+    .then(r => r.json())
+    .then(data => {
+        statusDiv.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm';
+        statusDiv.textContent = '配置已保存，部分设置需重启生效';
+        statusDiv.classList.remove('hidden');
+        setTimeout(() => statusDiv.classList.add('hidden'), 3000);
+    })
+    .catch(err => {
+        statusDiv.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm';
+        statusDiv.textContent = '保存失败: ' + err.message;
+        statusDiv.classList.remove('hidden');
+    });
+}
+
+function cleanupData() {
+    fetch('/api/v1/maintenance/cleanup', {method: 'POST'})
+    .then(r => r.json())
+    .then(data => { alert(data.message || '清理完成'); })
+    .catch(err => { alert('清理失败: ' + err.message); });
+}
+
+function rebuildDb() {
+    fetch('/api/v1/maintenance/rebuild', {method: 'POST'})
+    .then(r => r.json())
+    .then(data => { alert(data.message || '重建完成'); })
+    .catch(err => { alert('重建失败: ' + err.message); });
+}
+</script>
+{% endblock %}
