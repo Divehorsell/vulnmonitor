@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}漏洞监控仪表盘{% endblock %} - VulnMonitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff8ed',
+                            100: '#ffeed4',
+                            200: '#ffd9a8',
+                            300: '#ffbd71',
+                            400: '#ff9838',
+                            500: '#ff7c11',
+                            600: '#f06006',
+                            700: '#c74807',
+                            800: '#9e390e',
+                            900: '#7f310f',
+                        },
+                        surface: {
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator { display: inline-block; }
+        .htmx-request.htmx-indicator { display: inline-block; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full bg-surface-50 text-surface-900 antialiased">
+    <nav class="bg-surface-900 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <a href="/" class="text-white font-bold text-xl tracking-tight">VulnMonitor</a>
+                    <span class="text-brand-400 text-sm font-medium hidden sm:inline">漏洞情报监控</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <a href="/" class="text-surface-300 hover:text-white hover:bg-surface-700 px-3 py-2 rounded-md text-sm font-medium transition-colors {% if request.url.path == '/' %}bg-surface-700 text-white{% endif %}">
+                        仪表盘
+                    </a>
+                    <a href="/vulnerabilities" class="text-surface-300 hover:text-white hover:bg-surface-700 px-3 py-2 rounded-md text-sm font-medium transition-colors {% if 'vulnerabilities' in request.url.path %}bg-surface-700 text-white{% endif %}">
+                        漏洞列表
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-surface-900 border-t border-surface-700 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <p class="text-center text-surface-300 text-sm">VulnMonitor 漏洞情报监控系统 &copy; 2024</p>
+        </div>
+    </footer>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

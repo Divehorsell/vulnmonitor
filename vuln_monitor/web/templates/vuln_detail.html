@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}{% if vuln %}{{ vuln.cve_id }}{% else %}漏洞未找到{% endif %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    {% if vuln %}
+    <div class="flex items-center space-x-3">
+        <a href="/vulnerabilities" class="text-brand-600 hover:text-brand-700 text-sm font-medium">
+            ← 返回列表
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-surface-200 overflow-hidden">
+        <div class="px-6 py-5 border-b border-surface-200 bg-gradient-to-r from-brand-50 to-orange-50">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-surface-900">{{ vuln.cve_id }}</h1>
+                    <p class="mt-1 text-surface-700 text-lg">{{ vuln.title }}</p>
+                </div>
+                <div class="flex items-center space-x-2 flex-shrink-0 ml-4">
+                    {% set severity_badge = {"CRITICAL": "bg-red-100 text-red-800 border-red-200", "HIGH": "bg-orange-100 text-orange-800 border-orange-200", "MEDIUM": "bg-yellow-100 text-yellow-800 border-yellow-200", "LOW": "bg-green-100 text-green-800 border-green-200", "INFO": "bg-blue-100 text-blue-800 border-blue-200"} %}
+                    {% set severity_label = {"CRITICAL": "严重", "HIGH": "高危", "MEDIUM": "中危", "LOW": "低危", "INFO": "信息"} %}
+                    {% if vuln.severity %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border {{ severity_badge.get(vuln.severity, 'bg-surface-100 text-surface-800 border-surface-200') }}">
+                        {{ severity_label.get(vuln.severity, vuln.severity) }}
+                    </span>
+                    {% endif %}
+                    {% if vuln.pushed %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">已推送</span>
+                    {% else %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 border border-red-200">待推送</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 py-5 space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-surface-50 rounded-lg p-4">
+                    <p class="text-xs font-medium text-surface-500 uppercase tracking-wider">数据来源</p>
+                    <p class="mt-1 text-sm font-semibold text-surface-900">{{ vuln.source }}</p>
+                </div>
+                <div class="bg-surface-50 rounded-lg p-4">
+                    <p class="text-xs font-medium text-surface-500 uppercase tracking-wider">发布日期</p>
+                    <p class="mt-1 text-sm font-semibold text-surface-900">{{ vuln.publish_date[:10] if vuln.publish_date else '-' }}</p>
+                </div>
+                <div class="bg-surface-50 rounded-lg p-4">
+                    <p class="text-xs font-medium text-surface-500 uppercase tracking-wider">POC 可用</p>
+                    <p class="mt-1 text-sm font-semibold {% if vuln.poc_available %}text-red-600{% else %}text-surface-500{% endif %}">
+                        {% if vuln.poc_available %}是 ⚠️{% else %}否{% endif %}
+                    </p>
+                </div>
+                <div class="bg-surface-50 rounded-lg p-4">
+                    <p class="text-xs font-medium text-surface-500 uppercase tracking-wider">KEV 标记</p>
+                    <p class="mt-1 text-sm font-semibold {% if vuln.kev_marked %}text-red-600{% else %}text-surface-500{% endif %}">
+                        {% if vuln.kev_marked %}是 ⚠️{% else %}否{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            {% if vuln.description %}
+            <div>
+                <h3 class="text-sm font-semibold text-surface-900 mb-2">漏洞描述</h3>
+                <div class="bg-surface-50 rounded-lg p-4 text-sm text-surface-700 leading-relaxed">
+                    {{ vuln.description }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if vuln.affected_products %}
+            <div>
+                <h3 class="text-sm font-semibold text-surface-900 mb-2">受影响产品</h3>
+                <div class="bg-surface-50 rounded-lg p-4 text-sm text-surface-700">
+                    {{ vuln.affected_products }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if vuln.fix_recommendation %}
+            <div>
+                <h3 class="text-sm font-semibold text-surface-900 mb-2">修复建议</h3>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-800 leading-relaxed">
+                    {{ vuln.fix_recommendation }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if vuln.references %}
+            <div>
+                <h3 class="text-sm font-semibold text-surface-900 mb-2">参考链接</h3>
+                <div class="bg-surface-50 rounded-lg p-4 space-y-1">
+                    {% if vuln.references is string %}
+                        {% set refs = vuln.references | from_json %}
+                    {% else %}
+                        {% set refs = vuln.references %}
+                    {% endif %}
+                    {% for ref in refs %}
+                    <a href="{{ ref }}" target="_blank" rel="noopener noreferrer" class="block text-sm text-brand-600 hover:text-brand-700 truncate">
+                        {{ ref }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="px-6 py-4 bg-surface-50 border-t border-surface-200 text-xs text-surface-500">
+            创建时间: {{ vuln.created_at[:19] if vuln.created_at else '-' }} · 更新时间: {{ vuln.updated_at[:19] if vuln.updated_at else '-' }} · 质量评分: {{ vuln.quality_score | round(1) }}
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm border border-surface-200 p-12 text-center">
+        <svg class="mx-auto h-16 w-16 text-surface-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h2 class="mt-4 text-lg font-semibold text-surface-900">未找到漏洞</h2>
+        <p class="mt-2 text-sm text-surface-500">CVE 编号 {{ cve_id }} 对应的漏洞不存在</p>
+        <a href="/vulnerabilities" class="mt-4 inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors">
+            返回列表
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

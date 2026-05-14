@@ -1,0 +1,59 @@
+# 应用基本配置
+app_name: "vulnmonitor"          # 应用名称
+app_version: "0.1.0"             # 应用版本
+debug: false                     # 调试模式，开启后输出详细日志
+
+# 数据库配置
+db_path: "data/vulnmonitor.db"   # SQLite 数据库文件路径
+
+# 采集配置
+crawl_interval: 15               # 采集间隔（分钟）
+crawl_timeout: 30                # 单次请求超时时间（秒）
+crawl_max_retries: 3             # 请求失败最大重试次数
+crawl_concurrency: 20            # 并发采集数
+
+# 去重配置
+dedup_ttl_days: 60               # 去重记录保留天数，超过此天数的记录将被清理
+
+# 推送配置
+push_enabled: true               # 是否启用推送通知
+push_score_threshold: 50.0       # 推送评分阈值，仅评分高于此值的漏洞才会推送
+
+# Telegram 推送配置
+tg_bot_token: null               # Telegram Bot Token，从 @BotFather 获取
+tg_chat_id: null                 # Telegram 接收消息的 Chat ID
+
+# 钉钉推送配置
+dingtalk_webhook: null           # 钉钉机器人 Webhook 地址
+dingtalk_secret: null            # 钉钉机器人加签密钥（可选）
+
+# 企业微信推送配置
+wecom_webhook: null              # 企业微信机器人 Webhook 地址
+
+# 飞书推送配置
+feishu_webhook: null             # 飞书机器人 Webhook 地址
+feishu_secret: null              # 飞书机器人加签密钥（可选）
+
+# 邮件推送配置
+email_smtp_host: null            # SMTP 服务器地址
+email_smtp_port: 465             # SMTP 服务器端口，465 为 SSL，587 为 TLS
+email_smtp_user: null            # SMTP 登录用户名
+email_smtp_password: null        # SMTP 登录密码
+email_from: null                 # 发件人地址，默认使用 SMTP 用户名
+email_to: []                     # 收件人地址列表
+
+# GitHub 配置
+github_token: null               # GitHub Personal Access Token，用于 API 访问和 PoC 搜索
+
+# Web 界面配置
+web_host: "127.0.0.1"           # Web 服务监听地址
+web_port: 8080                   # Web 服务监听端口
+
+# 日志配置
+log_level: "INFO"                # 日志级别：DEBUG / INFO / WARNING / ERROR
+log_dir: "data/logs"             # 日志文件存储目录
+log_rotation: "10 MB"            # 日志文件轮转大小
+log_retention: "30 days"         # 日志文件保留时间
+
+# 安全配置
+encryption_key: null             # 数据加密密钥，用于敏感信息加密存储

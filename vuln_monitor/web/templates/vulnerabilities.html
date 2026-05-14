@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}漏洞列表{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-surface-900">漏洞列表</h1>
+        <div class="flex items-center space-x-2">
+            <span class="htmx-indicator">
+                <svg class="animate-spin h-5 w-5 text-brand-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-surface-200 p-6">
+        <form id="filter-form" hx-get="/vulnerabilities" hx-target="#vuln-list" hx-swap="innerHTML" hx-push-url="true" hx-indicator=".htmx-indicator">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-surface-700 mb-1">CVE 编号</label>
+                    <input type="text" name="cve_id" value="{{ filters.cve_id }}" placeholder="CVE-2024-xxxx"
+                        class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-surface-700 mb-1">数据源</label>
+                    <select name="source" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors">
+                        <option value="">全部来源</option>
+                        {% for src in sources %}
+                        <option value="{{ src }}" {% if filters.source == src %}selected{% endif %}>{{ src }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-surface-700 mb-1">关键词</label>
+                    <input type="text" name="keyword" value="{{ filters.keyword }}" placeholder="搜索标题/描述"
+                        class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-surface-700 mb-1">严重等级</label>
+                    <select name="severity" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors">
+                        <option value="">全部等级</option>
+                        <option value="CRITICAL" {% if filters.severity == 'CRITICAL' %}selected{% endif %}>严重</option>
+                        <option value="HIGH" {% if filters.severity == 'HIGH' %}selected{% endif %}>高危</option>
+                        <option value="MEDIUM" {% if filters.severity == 'MEDIUM' %}selected{% endif %}>中危</option>
+                        <option value="LOW" {% if filters.severity == 'LOW' %}selected{% endif %}>低危</option>
+                        <option value="INFO" {% if filters.severity == 'INFO' %}selected{% endif %}>信息</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-surface-700 mb-1">时间范围</label>
+                    <select name="days" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors">
+                        <option value="">不限</option>
+                        <option value="1" {% if filters.days == '1' %}selected{% endif %}>今天</option>
+                        <option value="3" {% if filters.days == '3' %}selected{% endif %}>近3天</option>
+                        <option value="7" {% if filters.days == '7' %}selected{% endif %}>近7天</option>
+                        <option value="30" {% if filters.days == '30' %}selected{% endif %}>近30天</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center space-x-3">
+                <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+                    搜索
+                </button>
+                <a href="/vulnerabilities" class="px-4 py-2 bg-surface-100 hover:bg-surface-200 text-surface-700 text-sm font-medium rounded-lg transition-colors">
+                    重置
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+        <button onclick="setFilter('severity','CRITICAL')" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-colors cursor-pointer">
+            🔴 严重
+        </button>
+        <button onclick="setFilter('severity','HIGH')" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 hover:bg-orange-200 transition-colors cursor-pointer">
+            🟠 高危
+        </button>
+        <button onclick="setFilter('severity','MEDIUM')" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors cursor-pointer">
+            🟡 中危
+        </button>
+        <button onclick="setFilter('severity','LOW')" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors cursor-pointer">
+            🟢 低危
+        </button>
+        <button onclick="setFilter('days','1')" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 hover:bg-brand-200 transition-colors cursor-pointer">
+            📅 今天
+        </button>
+        <button onclick="setFilter('days','7')" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 hover:bg-brand-200 transition-colors cursor-pointer">
+            📅 近7天
+        </button>
+        <button onclick="setFilter('pushed','false')" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-colors cursor-pointer">
+            ⏳ 待推送
+        </button>
+        <button onclick="setFilter('pushed','true')" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors cursor-pointer">
+            ✅ 已推送
+        </button>
+    </div>
+
+    <div id="vuln-list">
+        {% include "partials/vuln_cards.html" %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function setFilter(name, value) {
+        const form = document.getElementById('filter-form');
+        let input = form.querySelector(`[name="${name}"]`);
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            form.appendChild(input);
+        }
+        input.value = value;
+        htmx.trigger(form, 'submit');
+    }
+</script>
+{% endblock %}
